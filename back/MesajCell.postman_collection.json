@@ -611,7 +611,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"yeni.calisan@sirket.com\",\n  \"full_name\": \"Yeni Çalışan\"\n}",
+              "raw": "{\n  \"email\": \"zeynep@sirket.com\",\n  \"gsm_number\": \"+905559876543\"\n}",
               "options": { "raw": { "language": "json" } }
             },
             "description": "Organizasyona davet linki gönderir. ORG_ADMIN yetkisi gerekebilir."

@@ -132,6 +132,7 @@ const login = async ({ gsm_number, password }, ip, userAgent) => {
 console.log('User OTP verified:', user.otp_verified);
   if (user.password_hash) {
     const valid = await bcrypt.compare(password, user.password_hash);
+    console.log('Password valid:', valid);
     if (!valid) throw { status: 401, message: 'GSM numarası veya şifre hatalı' };
   }
 

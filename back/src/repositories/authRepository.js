@@ -2,7 +2,9 @@ const db = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
 
 const findUserByGsm = async (gsm_number) => {
+  
   const [rows] = await db.query('SELECT * FROM users WHERE gsm_number = ?', [gsm_number]);
+  console.log('findUserByGsm - GSM:', gsm_number, 'Rows found:', rows.length);
   return rows[0] || null;
 };
 

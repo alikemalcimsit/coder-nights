@@ -29,7 +29,7 @@ const inviteUser = async (requester, { email, gsm_number }) => {
     expires_at,
   });
 
-  const inviteLink = `${process.env.APP_URL || 'http://localhost:3000'}/api/v1/org/accept-invite?token=${invite_token}`;
+  const inviteLink = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/register?token=${invite_token}`;
   return { invite_token, invite_link: inviteLink, expires_at };
 };
 
