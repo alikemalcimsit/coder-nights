@@ -10,12 +10,7 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- -----------------------------------------------------
 -- Schema
 -- -----------------------------------------------------
-<<<<<<< HEAD
--- Railway'de "railway" DB kullanılır, schema oluşturulmaz
-=======
-CREATE SCHEMA IF NOT EXISTS `mesajcell_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `mesajcell_db`;
->>>>>>> mobil
+-- Aiven'da defaultdb kullanılır, schema oluşturulmaz
 
 -- -----------------------------------------------------
 -- 1. organizations  (created_by FK eklenir sonra)
