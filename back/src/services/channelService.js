@@ -105,11 +105,28 @@ const updateNotificationPreference = async (user, channel_id, preference) => {
   return { message: 'Bildirim tercihi güncellendi' };
 };
 
+const updateMemberRole = async (requester, channel_id, target_user_id, role) => {
+  if (!['MEMBER', 'CHANNEL_ADMIN'].includes(role)) {
+    throw { status: 400, message: 'Geçersiz rol. MEMBER veya CHANNEL_ADMIN olmalı' };
+  }
+  const channel = await channelRepo.findById(channel_id);
+  if (!channel) throw { status: 404, message: 'Kanal bulunamadı' };
+
+  const requesterRole = await channelRepo.getMemberRole(channel_id, requester.id);
+  if (requesterRole !== 'CHANNEL_ADMIN' && requester.role !== 'ORG_ADMIN') {
+    throw { status: 403, message: 'Sadece kanal yöneticisi veya org admin rol atayabilir' };
+  }
+
+  await channelRepo.updateMemberRole(channel_id, target_user_id, role);
+  return { message: `Kullanıcı rolü ${role} olarak güncellendi` };
+};
+
 const getPublicChannels = async (user) => {
   return channelRepo.getPublicChannels(user.org_id);
 };
 
 module.exports = {
   createChannel, getMyChannels, joinChannel, inviteToChannel,
-  removeMember, startDm, getChannelMembers, updateNotificationPreference, getPublicChannels,
+  removeMember, startDm, getChannelMembers, updateNotificationPreference,
+  updateMemberRole, getPublicChannels,
 };

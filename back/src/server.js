@@ -37,6 +37,16 @@ db.query('SELECT 1')
     process.exit(1);
   });
 
+// Render uyku modunu önlemek için self-ping (her 10 dakika)
+if (process.env.RENDER) {
+  setInterval(() => {
+    const url = `https://coder-nights.onrender.com/health`;
+    require('https').get(url, (res) => {
+      console.log(`[PING] Self-ping: ${res.statusCode}`);
+    }).on('error', () => {});
+  }, 10 * 60 * 1000);
+}
+
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('[SERVER] Kapatılıyor...');

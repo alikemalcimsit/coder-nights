@@ -82,8 +82,17 @@ const updateNotificationPreference = async (req, res) => {
   }
 };
 
+const updateMemberRole = async (req, res) => {
+  try {
+    const result = await channelService.updateMemberRole(req.user, req.params.id, req.params.userId, req.body.role);
+    return success(res, result);
+  } catch (err) {
+    return error(res, err.message, err.status || 500);
+  }
+};
+
 module.exports = {
   createChannel, getMyChannels, getPublicChannels,
   joinChannel, inviteToChannel, removeMember,
-  startDm, getMembers, updateNotificationPreference,
+  startDm, getMembers, updateNotificationPreference, updateMemberRole,
 };

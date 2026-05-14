@@ -29,6 +29,9 @@ router.post('/:id/invite', ctrl.inviteToChannel);
 // DELETE /api/v1/channels/:id/members/:userId
 router.delete('/:id/members/:userId', ctrl.removeMember);
 
+// PATCH /api/v1/channels/:id/members/:userId/role
+router.patch('/:id/members/:userId/role', ctrl.updateMemberRole);
+
 // PATCH /api/v1/channels/:id/notification-preference
 router.patch('/:id/notification-preference', ctrl.updateNotificationPreference);
 

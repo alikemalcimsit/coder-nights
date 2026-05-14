@@ -86,6 +86,13 @@ const findDmBetween = async (user1_id, user2_id, org_id) => {
   return rows[0] || null;
 };
 
+const updateMemberRole = async (channel_id, user_id, role) => {
+  await db.query(
+    'UPDATE channel_members SET role = ? WHERE channel_id = ? AND user_id = ?',
+    [role, channel_id, user_id]
+  );
+};
+
 const updateNotificationPreference = async (channel_id, user_id, preference) => {
   await db.query(
     'UPDATE channel_members SET notification_preference = ? WHERE channel_id = ? AND user_id = ?',
@@ -100,5 +107,5 @@ const archiveChannel = async (channel_id) => {
 module.exports = {
   createChannel, findById, getUserChannels, getPublicChannels,
   isMember, addMember, removeMember, getMemberRole, getMembers,
-  findDmBetween, updateNotificationPreference, archiveChannel,
+  findDmBetween, updateNotificationPreference, updateMemberRole, archiveChannel,
 };
