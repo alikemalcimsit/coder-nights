@@ -39,14 +39,14 @@ const createInvitation = async ({ org_id, invited_by, email, gsm_number, invite_
 
 const findInvitationByToken = async (token) => {
   const [rows] = await db.query(
-    'SELECT * FROM organization_invitations WHERE invite_token = ? AND status = "PENDING" AND expires_at > NOW()',
+    "SELECT * FROM organization_invitations WHERE invite_token = ? AND status = 'PENDING' AND expires_at > NOW()",
     [token]
   );
   return rows[0] || null;
 };
 
 const acceptInvitation = async (token) => {
-  await db.query('UPDATE organization_invitations SET status = "ACCEPTED" WHERE invite_token = ?', [token]);
+  await db.query("UPDATE organization_invitations SET status = 'ACCEPTED' WHERE invite_token = ?", [token]);
 };
 
 const updateUserOrg = async (user_id, org_id) => {

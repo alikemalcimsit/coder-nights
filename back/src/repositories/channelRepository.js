@@ -29,7 +29,7 @@ const getUserChannels = async (user_id, org_id) => {
 
 const getPublicChannels = async (org_id) => {
   const [rows] = await db.query(
-    'SELECT * FROM channels WHERE org_id = ? AND type = "PUBLIC" AND is_archived = 0',
+    "SELECT * FROM channels WHERE org_id = ? AND type = 'PUBLIC' AND is_archived = 0",
     [org_id]
   );
   return rows;
