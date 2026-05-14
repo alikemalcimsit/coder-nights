@@ -8,18 +8,29 @@ require('dotenv').config();
 const OTP_CODE = process.env.OTP_CODE || '1234';
 const OTP_EXPIRES_MINUTES = parseInt(process.env.OTP_EXPIRES_MINUTES) || 5;
 
-const register = async ({ gsm_number, full_name, email, password, org_id }) => {
+const register = async ({ gsm_number, full_name, email, password, org_id, invite_token }) => {
+  // invite_token varsa org_id'yi oradan çöz
+  let resolvedOrgId = org_id;
+  let invitation = null;
+
+  if (invite_token) {
+    invitation = await orgRepo.findInvitationByToken(invite_token);
+    if (!invitation) throw { status: 400, message: 'Geçersiz veya süresi dolmuş davet linki' };
+    resolvedOrgId = invitation.org_id;
+  }
+
+  if (!resolvedOrgId) throw { status: 400, message: 'org_id veya invite_token gerekli' };
+
   const existing = await authRepo.findUserByGsm(gsm_number);
   if (existing) throw { status: 409, message: 'Bu GSM numarası zaten kayıtlı' };
 
-  // Org kontrolü
-  const org = await orgRepo.findById(org_id);
+  const org = await orgRepo.findById(resolvedOrgId);
   if (!org) throw { status: 404, message: 'Organizasyon bulunamadı' };
 
   const password_hash = password ? await bcrypt.hash(password, 10) : null;
 
   const user = await authRepo.createUser({
-    org_id,
+    org_id: resolvedOrgId,
     full_name,
     gsm_number,
     email: email || null,
@@ -27,7 +38,11 @@ const register = async ({ gsm_number, full_name, email, password, org_id }) => {
     role: 'EMPLOYEE',
   });
 
-  // OTP oluştur (simülasyon: 1234)
+  // Davet kullanıldıysa kabul edildi olarak işaretle
+  if (invitation) {
+    await orgRepo.acceptInvitation(invite_token);
+  }
+
   const expires_at = new Date(Date.now() + OTP_EXPIRES_MINUTES * 60 * 1000);
   await authRepo.createOtp(gsm_number, OTP_CODE, expires_at);
 
@@ -111,9 +126,10 @@ const verifyOtp = async ({ gsm_number, otp_code }, ip, userAgent) => {
 
 const login = async ({ gsm_number, password }, ip, userAgent) => {
   const user = await authRepo.findUserByGsm(gsm_number);
+  console.log('Login attempt for GSM:', gsm_number, 'User found:', !!user);
   if (!user) throw { status: 401, message: 'GSM numarası veya şifre hatalı' };
   if (!user.otp_verified) throw { status: 403, message: 'OTP doğrulaması tamamlanmamış' };
-
+console.log('User OTP verified:', user.otp_verified);
   if (user.password_hash) {
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) throw { status: 401, message: 'GSM numarası veya şifre hatalı' };

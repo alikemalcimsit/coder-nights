@@ -1,0 +1,1239 @@
+{
+  "info": {
+    "name": "MesajCell API",
+    "_postman_id": "mesajcell-api-v1",
+    "description": "MesajCell Backend - Node.js + Express + Socket.io\nBase URL: {{base_url}}\nTüm korumalı endpointler Bearer token gerektirir.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://coder-nights.onrender.com",
+      "type": "string"
+    },
+    {
+      "key": "invite_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "channel_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "message_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "org_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Sunucunun ayakta olup olmadığını kontrol eder."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"status\": \"ok\",\n  \"timestamp\": \"2026-05-14T10:00:00.000Z\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register Admin (Org Kur)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register-admin",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "register-admin"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gsm_number\": \"+905551234567\",\n  \"full_name\": \"Ali Kemal\",\n  \"email\": \"ali@sirket.com\",\n  \"password\": \"Gizli123!\",\n  \"org_name\": \"Acme Şirketi\",\n  \"org_domain\": \"acme.com\",\n  \"org_logo\": \"https://example.com/logo.png\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Yeni organizasyon ve ORG_ADMIN kullanıcısı oluşturur. OTP simülasyon kodu (1234) döner."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Organizasyon ve admin hesabı oluşturuldu\",\n  \"data\": {\n    \"user_id\": \"uuid-user-id\",\n    \"org_id\": \"uuid-org-id\",\n    \"message\": \"OTP gönderildi (simülasyon: 1234)\"\n  }\n}"
+            },
+            {
+              "name": "409 GSM Kayıtlı",
+              "status": "Conflict",
+              "code": 409,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Bu GSM numarası zaten kayıtlı\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Register (Çalışan Kaydı — invite_token ile)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gsm_number\": \"+905559876543\",\n  \"full_name\": \"Zeynep Yılmaz\",\n  \"email\": \"zeynep@sirket.com\",\n  \"password\": \"Gizli123!\",\n  \"invite_token\": \"{{invite_token}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Davet linki ile çalışan kaydı. invite_token davet linkinden gelir (org_id bilinmeden kayıt olunabilir). Alternatif olarak org_id de gönderilebilir."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Kayıt başarılı, OTP gönderildi\",\n  \"data\": {\n    \"user_id\": \"uuid-user-id\",\n    \"message\": \"OTP gönderildi (simülasyon: 1234)\"\n  }\n}"
+            },
+            {
+              "name": "404 Org Bulunamadı",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Organizasyon bulunamadı\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify OTP",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/verify-otp",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "verify-otp"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gsm_number\": \"+905551234567\",\n  \"otp_code\": \"1234\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "OTP doğrular ve access_token + refresh_token döner. Token'ları collection variable olarak kaydetmeyi unutmayın."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.success && json.data) {",
+                  "  pm.collectionVariables.set('access_token', json.data.access_token);",
+                  "  pm.collectionVariables.set('refresh_token', json.data.refresh_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Giriş başarılı\",\n  \"data\": {\n    \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"user\": {\n      \"id\": \"uuid-user-id\",\n      \"full_name\": \"Ali Kemal\",\n      \"gsm_number\": \"+905551234567\",\n      \"email\": \"ali@sirket.com\",\n      \"role\": \"ORG_ADMIN\",\n      \"org_id\": \"uuid-org-id\",\n      \"presence_status\": \"online\",\n      \"profile_photo_url\": null\n    }\n  }\n}"
+            },
+            {
+              "name": "400 Geçersiz OTP",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Geçersiz veya süresi dolmuş OTP\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login (Şifre ile Giriş)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gsm_number\": \"+905551234567\",\n  \"password\": \"Gizli123!\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "OTP doğrulaması tamamlanmış kullanıcılar için şifre ile giriş."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.success && json.data) {",
+                  "  pm.collectionVariables.set('access_token', json.data.access_token);",
+                  "  pm.collectionVariables.set('refresh_token', json.data.refresh_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Giriş başarılı\",\n  \"data\": {\n    \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"user\": {\n      \"id\": \"uuid-user-id\",\n      \"full_name\": \"Ali Kemal\",\n      \"gsm_number\": \"+905551234567\",\n      \"email\": \"ali@sirket.com\",\n      \"role\": \"ORG_ADMIN\",\n      \"org_id\": \"uuid-org-id\",\n      \"presence_status\": \"online\",\n      \"profile_photo_url\": null\n    }\n  }\n}"
+            },
+            {
+              "name": "401 Hatalı Giriş",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"GSM numarası veya şifre hatalı\"\n}"
+            },
+            {
+              "name": "403 OTP Doğrulanmamış",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"OTP doğrulaması tamamlanmamış\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Yeni access_token ve refresh_token çifti üretir. Eski refresh_token geçersiz olur."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.success && json.data) {",
+                  "  pm.collectionVariables.set('access_token', json.data.access_token);",
+                  "  pm.collectionVariables.set('refresh_token', json.data.refresh_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Token yenilendi\",\n  \"data\": {\n    \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n  }\n}"
+            },
+            {
+              "name": "401 Geçersiz Token",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Geçersiz refresh token\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Refresh token'ı veritabanından siler. Session sonlanır."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Çıkış yapıldı\",\n  \"data\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Resend OTP",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/resend-otp",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "resend-otp"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gsm_number\": \"+905551234567\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Yeni OTP kodu oluşturur ve (simülasyon) gönderir."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"OTP yeniden gönderildi\",\n  \"data\": {\n    \"message\": \"OTP gönderildi (simülasyon: 1234)\"\n  }\n}"
+            },
+            {
+              "name": "404 Kullanıcı Yok",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Kullanıcı bulunamadı\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Me (Profilim)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "me"]
+            },
+            "description": "Giriş yapmış kullanıcının profil bilgilerini döner."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"uuid-user-id\",\n    \"full_name\": \"Ali Kemal\",\n    \"gsm_number\": \"+905551234567\",\n    \"email\": \"ali@sirket.com\",\n    \"role\": \"ORG_ADMIN\",\n    \"org_id\": \"uuid-org-id\",\n    \"presence_status\": \"online\",\n    \"profile_photo_url\": null,\n    \"created_at\": \"2026-05-14T10:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "401 Yetkisiz",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Token gerekli\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "me"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Ali Kemal Cimsit\",\n  \"email\": \"yeni@sirket.com\",\n  \"profile_photo_url\": \"https://example.com/avatar.jpg\",\n  \"presence_status\": \"away\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Kullanıcı profilini günceller. Tüm alanlar opsiyoneldir."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Profil güncellendi\",\n  \"data\": {\n    \"id\": \"uuid-user-id\",\n    \"full_name\": \"Ali Kemal Cimsit\",\n    \"email\": \"yeni@sirket.com\",\n    \"presence_status\": \"away\",\n    \"profile_photo_url\": \"https://example.com/avatar.jpg\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Search Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/search?q=ali",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "search"],
+              "query": [{ "key": "q", "value": "ali", "description": "Arama terimi (isim veya GSM)" }]
+            },
+            "description": "Aynı organizasyondaki kullanıcıları arar. ?q= parametresi ile."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"uuid-user-id\",\n      \"full_name\": \"Ali Kemal\",\n      \"gsm_number\": \"+905551234567\",\n      \"email\": \"ali@sirket.com\",\n      \"presence_status\": \"online\",\n      \"profile_photo_url\": null\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/notifications",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "notifications"]
+            },
+            "description": "Kullanıcının bildirimlerini listeler."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"uuid-notif-id\",\n      \"type\": \"channel_invite\",\n      \"content\": \"Genel kanalına davet edildiniz\",\n      \"is_read\": false,\n      \"created_at\": \"2026-05-14T10:00:00.000Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Mark Notifications Read",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/notifications/read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "notifications", "read"]
+            },
+            "description": "Tüm bildirimleri okundu olarak işaretler."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"updated\": 3\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Organization",
+      "item": [
+        {
+          "name": "Get Organization",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/org",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "org"]
+            },
+            "description": "Kullanıcının ait olduğu organizasyon bilgilerini döner."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"uuid-org-id\",\n    \"name\": \"Acme Şirketi\",\n    \"domain\": \"acme.com\",\n    \"logo_url\": \"https://example.com/logo.png\",\n    \"created_by\": \"uuid-user-id\",\n    \"created_at\": \"2026-05-14T10:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Org Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/org/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "org", "users"]
+            },
+            "description": "Organizasyondaki tüm kullanıcıları listeler."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"uuid-user-id\",\n      \"full_name\": \"Ali Kemal\",\n      \"gsm_number\": \"+905551234567\",\n      \"email\": \"ali@sirket.com\",\n      \"role\": \"ORG_ADMIN\",\n      \"presence_status\": \"online\",\n      \"profile_photo_url\": null\n    },\n    {\n      \"id\": \"uuid-user-id-2\",\n      \"full_name\": \"Zeynep Yılmaz\",\n      \"gsm_number\": \"+905559876543\",\n      \"email\": \"zeynep@sirket.com\",\n      \"role\": \"EMPLOYEE\",\n      \"presence_status\": \"offline\",\n      \"profile_photo_url\": null\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Invite Info (Auth Gerekmez)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/org/invite-info?token={{invite_token}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "org", "invite-info"],
+              "query": [{ "key": "token", "value": "{{invite_token}}", "description": "Davet token'ı" }]
+            },
+            "description": "Kayıt ekranından önce çağrılır. Token geçerliyse org bilgilerini döner. Frontend bu bilgiyle 'Acme Şirketi'ne davet edildiniz' gösterir."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.success && json.data) {",
+                  "  pm.collectionVariables.set('org_id', json.data.org_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"org_id\": \"uuid-org-id\",\n    \"org_name\": \"Acme Şirketi\",\n    \"org_logo\": \"https://example.com/logo.png\",\n    \"expires_at\": \"2026-05-15T10:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "400 Geçersiz Token",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Geçersiz veya süresi dolmuş davet\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Invite User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/org/invite",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "org", "invite"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"yeni.calisan@sirket.com\",\n  \"full_name\": \"Yeni Çalışan\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Organizasyona davet linki gönderir. ORG_ADMIN yetkisi gerekebilir."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Davet gönderildi\",\n  \"data\": {\n    \"invite_token\": \"abc123xyz\",\n    \"expires_at\": \"2026-05-21T10:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Accept Invite",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/org/accept-invite?token=abc123xyz",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "org", "accept-invite"],
+              "query": [{ "key": "token", "value": "abc123xyz", "description": "Davet token'ı" }]
+            },
+            "description": "Davet linkini kabul eder, kullanıcıyı organizasyona bağlar. Bearer token gerekli."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Organizasyona katıldınız\",\n  \"data\": {\n    \"org_id\": \"uuid-org-id\",\n    \"org_name\": \"Acme Şirketi\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Channels",
+      "item": [
+        {
+          "name": "Get My Channels",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/channels",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "channels"]
+            },
+            "description": "Kullanıcının üye olduğu tüm kanalları listeler (PUBLIC, PRIVATE, DM)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"uuid-channel-id\",\n      \"name\": \"genel\",\n      \"description\": \"Genel kanal\",\n      \"type\": \"PUBLIC\",\n      \"icon_url\": null,\n      \"org_id\": \"uuid-org-id\",\n      \"created_by\": \"uuid-user-id\",\n      \"created_at\": \"2026-05-14T10:00:00.000Z\"\n    },\n    {\n      \"id\": \"uuid-channel-id-2\",\n      \"name\": \"dm-uuid1-uuid2\",\n      \"description\": null,\n      \"type\": \"DM\",\n      \"icon_url\": null,\n      \"org_id\": \"uuid-org-id\",\n      \"created_by\": \"uuid-user-id\",\n      \"created_at\": \"2026-05-14T11:00:00.000Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Public Channels",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/channels/public",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "channels", "public"]
+            },
+            "description": "Organizasyondaki tüm PUBLIC kanalları listeler (üye olunmasa da görünür)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"uuid-channel-id\",\n      \"name\": \"genel\",\n      \"description\": \"Genel kanal\",\n      \"type\": \"PUBLIC\",\n      \"icon_url\": null,\n      \"member_count\": 5\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Channel",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/channels",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "channels"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"proje-alpha\",\n  \"description\": \"Alpha projesi ekibi\",\n  \"type\": \"PUBLIC\",\n  \"icon_url\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Yeni kanal oluşturur. type: PUBLIC | PRIVATE (DM bu endpoint ile oluşturulamaz). PRIVATE kanal sadece ORG_ADMIN oluşturabilir."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.success && json.data && json.data.id) {",
+                  "  pm.collectionVariables.set('channel_id', json.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Kanal oluşturuldu\",\n  \"data\": {\n    \"id\": \"uuid-channel-id\",\n    \"name\": \"proje-alpha\",\n    \"description\": \"Alpha projesi ekibi\",\n    \"type\": \"PUBLIC\",\n    \"icon_url\": null,\n    \"org_id\": \"uuid-org-id\",\n    \"created_by\": \"uuid-user-id\",\n    \"created_at\": \"2026-05-14T10:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "403 Yetkisiz (PRIVATE)",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Sadece Org Admin private kanal oluşturabilir\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Start DM",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/channels/dm",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "channels", "dm"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"target_user_id\": \"{{user_id}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "İki kullanıcı arasında DM kanalı başlatır. Zaten varsa mevcut kanalı döner."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"DM başlatıldı\",\n  \"data\": {\n    \"id\": \"uuid-dm-channel-id\",\n    \"name\": \"dm-uuid1-uuid2\",\n    \"type\": \"DM\",\n    \"org_id\": \"uuid-org-id\",\n    \"created_at\": \"2026-05-14T10:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "400 Kendine DM",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Kendinizle DM başlatamazsınız\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Channel Members",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/channels/{{channel_id}}/members",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "channels", "{{channel_id}}", "members"]
+            },
+            "description": "Kanaldaki üyeleri listeler. Üye olmak gerekir."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"user_id\": \"uuid-user-id\",\n      \"full_name\": \"Ali Kemal\",\n      \"profile_photo_url\": null,\n      \"presence_status\": \"online\",\n      \"channel_role\": \"CHANNEL_ADMIN\"\n    },\n    {\n      \"user_id\": \"uuid-user-id-2\",\n      \"full_name\": \"Zeynep Yılmaz\",\n      \"profile_photo_url\": null,\n      \"presence_status\": \"offline\",\n      \"channel_role\": \"MEMBER\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "403 Üye Değil",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Bu kanalın üyesi değilsiniz\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Join Channel",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/channels/{{channel_id}}/join",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "channels", "{{channel_id}}", "join"]
+            },
+            "description": "PUBLIC kanala katılır. Farklı org veya PRIVATE kanal için hata döner."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"message\": \"Kanala katıldınız\"\n  }\n}"
+            },
+            {
+              "name": "409 Zaten Üye",
+              "status": "Conflict",
+              "code": 409,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Zaten bu kanalın üyesisiniz\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Invite to Channel",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/channels/{{channel_id}}/invite",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "channels", "{{channel_id}}", "invite"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"{{user_id}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Kullanıcıyı kanala davet eder. CHANNEL_ADMIN veya ORG_ADMIN yetkisi gerekir."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"message\": \"Kullanıcı kanala eklendi\"\n  }\n}"
+            },
+            {
+              "name": "403 Yetkisiz",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Sadece kanal yöneticisi veya org admin davet edebilir\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Remove Member",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/channels/{{channel_id}}/members/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "channels", "{{channel_id}}", "members", "{{user_id}}"]
+            },
+            "description": "Kanaldan üye çıkarır. CHANNEL_ADMIN veya ORG_ADMIN yetkisi gerekir."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"message\": \"Kullanıcı kanaldan çıkarıldı\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Notification Preference",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/channels/{{channel_id}}/notification-preference",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "channels", "{{channel_id}}", "notification-preference"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"preference\": \"muted\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Kanal bildirim tercihini günceller. preference: all | mentions | muted"
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"message\": \"Bildirim tercihi güncellendi\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Channel Messages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/channels/{{channel_id}}/messages?page=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "channels", "{{channel_id}}", "messages"],
+              "query": [{ "key": "page", "value": "1", "description": "Sayfa numarası (default: 1)" }]
+            },
+            "description": "Kanaldaki mesajları sayfalı olarak getirir. Üye olmak gerekir."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"uuid-message-id\",\n      \"channel_id\": \"uuid-channel-id\",\n      \"sender_id\": \"uuid-user-id\",\n      \"sender_name\": \"Ali Kemal\",\n      \"content\": \"Merhaba!\",\n      \"is_deleted\": false,\n      \"is_pinned\": false,\n      \"reactions\": [],\n      \"created_at\": \"2026-05-14T10:00:00.000Z\",\n      \"updated_at\": \"2026-05-14T10:00:00.000Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Send Message (REST Fallback)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/channels/{{channel_id}}/messages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "channels", "{{channel_id}}", "messages"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Merhaba ekip!\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Kanala mesaj gönderir (REST fallback). Normalde WebSocket üzerinden gönderilmeli. Başarı durumunda WebSocket event de tetiklenir."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.success && json.data && json.data.id) {",
+                  "  pm.collectionVariables.set('message_id', json.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Mesaj gönderildi\",\n  \"data\": {\n    \"id\": \"uuid-message-id\",\n    \"channel_id\": \"uuid-channel-id\",\n    \"sender_id\": \"uuid-user-id\",\n    \"content\": \"Merhaba ekip!\",\n    \"is_deleted\": false,\n    \"is_pinned\": false,\n    \"reactions\": [],\n    \"created_at\": \"2026-05-14T10:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Pinned Messages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/channels/{{channel_id}}/pinned",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "channels", "{{channel_id}}", "pinned"]
+            },
+            "description": "Kanaldaki sabitlenmiş mesajları listeler."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"uuid-message-id\",\n      \"channel_id\": \"uuid-channel-id\",\n      \"sender_id\": \"uuid-user-id\",\n      \"content\": \"Önemli duyuru!\",\n      \"is_pinned\": true,\n      \"created_at\": \"2026-05-14T10:00:00.000Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Pin Message",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/channels/{{channel_id}}/pin/{{message_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "channels", "{{channel_id}}", "pin", "{{message_id}}"]
+            },
+            "description": "Mesajı kanala sabitler. CHANNEL_ADMIN veya ORG_ADMIN yetkisi gerekebilir."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"message\": \"Mesaj sabitlendi\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "Edit Message",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/{{message_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages", "{{message_id}}"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Düzenlenmiş mesaj içeriği\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Mesaj içeriğini günceller. Sadece mesaj sahibi düzenleyebilir. WebSocket event tetiklenir."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Mesaj güncellendi\",\n  \"data\": {\n    \"id\": \"uuid-message-id\",\n    \"channel_id\": \"uuid-channel-id\",\n    \"content\": \"Düzenlenmiş mesaj içeriği\",\n    \"updated_at\": \"2026-05-14T11:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "403 Yetkisiz",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Bu mesajı düzenleme yetkiniz yok\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Message",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/{{message_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages", "{{message_id}}"]
+            },
+            "description": "Mesajı siler. Sadece mesaj sahibi silebilir. WebSocket event tetiklenir."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Mesaj silindi\",\n  \"data\": {\n    \"id\": \"uuid-message-id\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "React to Message",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/{{message_id}}/reactions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages", "{{message_id}}", "reactions"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emoji\": \"👍\",\n  \"channel_id\": \"{{channel_id}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Mesaja emoji reaksiyon ekler. WebSocket event tetiklenir."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    { \"emoji\": \"👍\", \"count\": 2, \"users\": [\"uuid-user-1\", \"uuid-user-2\"] },\n    { \"emoji\": \"🎉\", \"count\": 1, \"users\": [\"uuid-user-3\"] }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Remove Reaction",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/{{message_id}}/reactions",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages", "{{message_id}}", "reactions"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"emoji\": \"👍\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Mesajdan reaksiyonu kaldırır."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    { \"emoji\": \"🎉\", \"count\": 1, \"users\": [\"uuid-user-3\"] }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "Search Messages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/search?q=merhaba&type=messages&channel_id={{channel_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "search"],
+              "query": [
+                { "key": "q", "value": "merhaba", "description": "Arama terimi" },
+                { "key": "type", "value": "messages", "description": "messages | users" },
+                { "key": "channel_id", "value": "{{channel_id}}", "description": "Belirli kanal (opsiyonel)" }
+              ]
+            },
+            "description": "Mesaj içeriği içinde full-text arama yapar. type=messages (default)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"uuid-message-id\",\n      \"channel_id\": \"uuid-channel-id\",\n      \"channel_name\": \"genel\",\n      \"sender_name\": \"Ali Kemal\",\n      \"content\": \"Merhaba ekip!\",\n      \"created_at\": \"2026-05-14T10:00:00.000Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Search Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/search?q=ali&type=users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "search"],
+              "query": [
+                { "key": "q", "value": "ali", "description": "Arama terimi" },
+                { "key": "type", "value": "users", "description": "messages | users" }
+              ]
+            },
+            "description": "Kullanıcı arar. type=users parametresi ile."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"uuid-user-id\",\n      \"full_name\": \"Ali Kemal\",\n      \"gsm_number\": \"+905551234567\",\n      \"presence_status\": \"online\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "WebSocket Events (Referans)",
+      "description": "Bu klasör REST endpoint değil — Socket.io event referansıdır.\nBağlantı: ws://localhost:3000\nAuth: socket.handshake.auth.token = access_token",
+      "item": [
+        {
+          "name": "[WS] Client → Server Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000",
+              "raw": "{{base_url}}"
+            },
+            "description": "## Client → Server (Emit)\n\n### `join` — Kanala katıl\n```json\n{ \"channel_id\": \"uuid-channel-id\" }\n```\n\n### `leave` — Kanaldan ayrıl\n```json\n{ \"channel_id\": \"uuid-channel-id\" }\n```\n\n### `message:send` — Mesaj gönder\n```json\n{\n  \"channel_id\": \"uuid-channel-id\",\n  \"content\": \"Merhaba!\"\n}\n```\n\n### `typing:start` — Yazıyor bildirimi başlat\n```json\n{ \"channel_id\": \"uuid-channel-id\" }\n```\n\n### `typing:stop` — Yazıyor bildirimi durdur\n```json\n{ \"channel_id\": \"uuid-channel-id\" }\n```\n\n### `presence:update` — Durum güncelle\n```json\n{ \"status\": \"online\" | \"away\" | \"offline\" }\n```"
+          },
+          "response": []
+        },
+        {
+          "name": "[WS] Server → Client Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}"
+            },
+            "description": "## Server → Client (Listen)\n\n### `message:new` — Yeni mesaj\n```json\n{\n  \"id\": \"uuid-message-id\",\n  \"channel_id\": \"uuid-channel-id\",\n  \"sender_id\": \"uuid-user-id\",\n  \"content\": \"Merhaba!\",\n  \"created_at\": \"2026-05-14T10:00:00.000Z\"\n}\n```\n\n### `message:edit` — Düzenlenen mesaj\n```json\n{\n  \"id\": \"uuid-message-id\",\n  \"channel_id\": \"uuid-channel-id\",\n  \"content\": \"Düzenlenmiş içerik\",\n  \"updated_at\": \"2026-05-14T11:00:00.000Z\"\n}\n```\n\n### `message:delete` — Silinen mesaj\n```json\n{\n  \"id\": \"uuid-message-id\",\n  \"channel_id\": \"uuid-channel-id\",\n  \"content\": \"Bu mesaj silindi\"\n}\n```\n\n### `message:reaction` — Reaksiyon güncelleme\n```json\n{\n  \"message_id\": \"uuid-message-id\",\n  \"reactions\": [{ \"emoji\": \"👍\", \"count\": 2 }]\n}\n```\n\n### `typing` — Yazıyor bildirimi\n```json\n{\n  \"channel_id\": \"uuid-channel-id\",\n  \"user_id\": \"uuid-user-id\",\n  \"full_name\": \"Ali Kemal\",\n  \"is_typing\": true\n}\n```\n\n### `presence` — Kullanıcı durum değişikliği\n```json\n{\n  \"user_id\": \"uuid-user-id\",\n  \"status\": \"away\"\n}\n```"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

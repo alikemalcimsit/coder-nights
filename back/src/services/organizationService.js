@@ -43,4 +43,17 @@ const acceptInvite = async (token, user_id) => {
   return { org_id: invitation.org_id, message: 'Organizasyona katıldınız' };
 };
 
-module.exports = { getOrganization, getOrgUsers, inviteUser, acceptInvite };
+const getInviteInfo = async (token) => {
+  if (!token) throw { status: 400, message: 'Token gerekli' };
+  const invitation = await orgRepo.findInvitationByToken(token);
+  if (!invitation) throw { status: 400, message: 'Geçersiz veya süresi dolmuş davet' };
+  const org = await orgRepo.findById(invitation.org_id);
+  return {
+    org_id: invitation.org_id,
+    org_name: org.name,
+    org_logo: org.logo_url,
+    expires_at: invitation.expires_at,
+  };
+};
+
+module.exports = { getOrganization, getOrgUsers, inviteUser, acceptInvite, getInviteInfo };

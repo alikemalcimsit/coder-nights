@@ -37,4 +37,13 @@ const acceptInvite = async (req, res) => {
   }
 };
 
-module.exports = { getOrganization, getUsers, inviteUser, acceptInvite };
+const getInviteInfo = async (req, res) => {
+  try {
+    const result = await orgService.getInviteInfo(req.query.token);
+    return success(res, result);
+  } catch (err) {
+    return error(res, err.message, err.status || 500);
+  }
+};
+
+module.exports = { getOrganization, getUsers, inviteUser, acceptInvite, getInviteInfo };

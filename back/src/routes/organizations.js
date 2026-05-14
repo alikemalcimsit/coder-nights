@@ -2,6 +2,9 @@ const router = require('express').Router();
 const ctrl = require('../controllers/organizationController');
 const { authenticate, requireRole } = require('../middleware/auth');
 
+// GET /api/v1/org/invite-info?token= (auth gerekmez — kayıt öncesi bilgi alınır)
+router.get('/invite-info', ctrl.getInviteInfo);
+
 router.use(authenticate);
 
 // GET /api/v1/org
