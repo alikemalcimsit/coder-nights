@@ -19,10 +19,10 @@ const searchUsers = async (org_id, query) => {
   return rows;
 };
 
-const updateProfile = async (id, { full_name, profile_photo_url, status_message }) => {
+const updateProfile = async (id, { full_name, profile_photo_url, status_message, presence_status }) => {
   await db.query(
-    'UPDATE users SET full_name = COALESCE(?, full_name), profile_photo_url = COALESCE(?, profile_photo_url), status_message = COALESCE(?, status_message) WHERE id = ?',
-    [full_name || null, profile_photo_url || null, status_message || null, id]
+    'UPDATE users SET full_name = COALESCE(?, full_name), profile_photo_url = COALESCE(?, profile_photo_url), status_message = COALESCE(?, status_message), presence_status = COALESCE(?, presence_status) WHERE id = ?',
+    [full_name || null, profile_photo_url || null, status_message || null, presence_status || null, id]
   );
   return findById(id);
 };

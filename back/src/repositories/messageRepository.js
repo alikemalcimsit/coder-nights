@@ -52,7 +52,7 @@ const updateMessage = async (id, content) => {
 
 const softDeleteMessage = async (id) => {
   await db.query(
-    'UPDATE messages SET is_deleted = 1, content = "Bu mesaj silindi", deleted_at = NOW() WHERE id = ?',
+    "UPDATE messages SET is_deleted = 1, content = 'Bu mesaj silindi', deleted_at = NOW() WHERE id = ?",
     [id]
   );
   return findById(id);
