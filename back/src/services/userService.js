@@ -24,4 +24,12 @@ const markNotificationsRead = async (user_id) => {
   return { message: 'Bildirimler okundu olarak işaretlendi' };
 };
 
-module.exports = { getMe, updateProfile, searchUsers, getNotifications, markNotificationsRead };
+const createNotification = async ({ user_id, type, reference_id }) => {
+  const allowed = ['MENTION', 'MESSAGE', 'CHANNEL_INVITE'];
+  if (!allowed.includes(type)) throw { status: 400, message: 'Geçersiz bildirim tipi' };
+  if (!user_id) throw { status: 400, message: 'user_id gerekli' };
+  await userRepo.createNotification(require('../config/db'), { user_id, type, reference_id });
+  return { message: 'Bildirim oluşturuldu' };
+};
+
+module.exports = { getMe, updateProfile, searchUsers, getNotifications, markNotificationsRead, createNotification };

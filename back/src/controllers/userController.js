@@ -46,4 +46,14 @@ const markNotificationsRead = async (req, res) => {
   }
 };
 
-module.exports = { getMe, updateProfile, searchUsers, getNotifications, markNotificationsRead };
+const createNotification = async (req, res) => {
+  try {
+    const { user_id, type, reference_id } = req.body;
+    const result = await userService.createNotification({ user_id, type, reference_id });
+    return success(res, result, 'Bildirim oluşturuldu', 201);
+  } catch (err) {
+    return error(res, err.message, err.status || 500);
+  }
+};
+
+module.exports = { getMe, updateProfile, searchUsers, getNotifications, markNotificationsRead, createNotification };

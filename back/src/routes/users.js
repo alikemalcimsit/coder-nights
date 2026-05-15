@@ -19,4 +19,7 @@ router.get('/notifications', ctrl.getNotifications);
 // PATCH /api/v1/users/notifications/read
 router.patch('/notifications/read', ctrl.markNotificationsRead);
 
+// POST /api/v1/users/notifications
+router.post('/notifications', ctrl.createNotification);
+
 module.exports = router;
