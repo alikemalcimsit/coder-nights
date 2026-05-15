@@ -46,7 +46,7 @@ const sendMessage = async (user, channel_id, { content, message_type, reply_to_m
       await messageRepo.createMention(message.id, mention.id);
       // Bildirim oluştur
       await db.query(
-        'INSERT INTO notifications (id, user_id, type, reference_id) VALUES (UUID(), ?, "MENTION", ?)',
+        "INSERT INTO notifications (id, user_id, type, reference_id) VALUES (UUID(), ?, 'MENTION', ?)",
         [mention.id, message.id]
       );
     }
